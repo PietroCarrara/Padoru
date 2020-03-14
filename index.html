@@ -42,12 +42,12 @@
 <body>
     
     <!-- R² plane grid -->
-    <div id="grid-container">
+    <div id="grid-container" class="grid">
 
     </div>
 
     <!-- Thing to graph -->
-    <div id="svg-container">
+    <div id="svg-container" class="graph">
 
     </div>
     
@@ -55,6 +55,7 @@
         var config = {
             gridPlaytime: 2,
             playtime: 1,
+            graphFile: 'svg/padoru.svg',
             gridLineDelay: 0.05,
             gridToGraphDelay: 3,
             easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
@@ -140,7 +141,7 @@
 
         fetch('svg/grid.svg')
         .then(async r => gridContaier.innerHTML = await r.text())
-        .then(() => fetch('svg/parodu.svg'))
+        .then(() => fetch(config.graphFile))
         .then(async r => svgContaier.innerHTML = await r.text())
         .then(() => createGrid())
         .then(async () => await sleep(config.gridToGraphDelay * 1000))
