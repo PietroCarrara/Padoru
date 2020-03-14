@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <title>Padoru</title>
+    <style>
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        body {
+            background-color: black;
+        }
+
+        path {
+            display: none;
+        }
+
+        .grid path {
+            stroke: white;
+        }
+
+        .graph path {
+            stroke: yellow;
+        }
+
+        text {
+            display: none;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    
+    <!-- R² plane grid -->
+    <div id="grid-container">
+
+    </div>
+
+    <!-- Thing to graph -->
+    <div id="svg-container">
+
+    </div>
+    
+    <script>
+        var config = {
+            gridPlaytime: 2,
+            playtime: 1,
+            gridLineDelay: 0.05,
+            gridToGraphDelay: 3,
+            easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+        };
+
+        var gridContaier = document.querySelector('#grid-container');
+        var svgContaier = document.querySelector('#svg-container');
+
+        /**
+         * Basically, you can use this function to select a random element from
+         * a pool and place it in a exclusion zone where it won't be picked up again
+         * 
+         * @param {[]} pool
+         * @param {number} exclusion 
+         */
+        function random(pool, exclusion) {
+            // Random index outside exclusion range
+            var rnd = Math.floor(Math.random() * (pool.length - exclusion));
+
+            var element = pool[rnd];
+
+            pool[rnd] = pool[pool.length - exclusion - 1];
+            pool[pool.length - exclusion - 1];
+
+            return element;
+        }
+
+        async function sleep(ms) {
+            await new Promise(r => setTimeout(r, ms));
+        }
+
+        // Animate grid
+        async function createGrid() {
+            var paths = document.querySelectorAll('.grid path');
+
+            for (var i = 0; i < paths.length; i++) {
+
+                var len = paths[i].getTotalLength();
+
+                // Sleep n milliseconds
+                if (len > 3) {
+                    // Wait less time between lines as the animation progresses
+                    await sleep(config.gridLineDelay * 1000);
+                }
+
+                paths[i].style.display = 'inline';
+                paths[i].style.strokeDasharray = len;
+                paths[i].style.strokeDashoffset = len;
+                paths[i].style.animation = `dash ${config.gridPlaytime}s ${config.easing} forwards`;
+            }
+        }
+
+        // Animate graph
+        async function createGraph(paths) {
+            var indexes = [];
+            for (var i = 0; i < paths.length; i++) {
+                indexes.push(i);
+            }
+
+            for (var j = 0; j < paths.length; j++) {
+
+                // How much do we still have to draw
+                // in a [0, 1] range
+                // Decreases over every iteration
+                var notYetDone = 1 - (j / paths.length);
+                
+                var i = random(indexes, j);
+                
+                var len = paths[i].getTotalLength();
+
+                // Sleep n milliseconds
+                if (len > 3) {
+                    // Wait less time between lines as the animation progresses
+                    await sleep(notYetDone*notYetDone*notYetDone * Math.random() * config.playtime * 1000);
+                }
+
+                paths[i].style.display = 'inline';
+                paths[i].style.strokeDasharray = len;
+                paths[i].style.strokeDashoffset = len;
+                paths[i].style.animation = `dash ${config.playtime}s ${config.easing} forwards`;
+            }
+        }
+
+        fetch('svg/grid.svg')
+        .then(async r => gridContaier.innerHTML = await r.text())
+        .then(() => fetch('svg/parodu.svg'))
+        .then(async r => svgContaier.innerHTML = await r.text())
+        .then(() => createGrid())
+        .then(async () => await sleep(config.gridToGraphDelay * 1000))
+        .then(() => createGraph(document.querySelectorAll('.graph path')));
+    </script>
+</body>
+
+</html>
