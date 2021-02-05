@@ -9,6 +9,7 @@
             position: absolute;
             top: 0;
             left: 0;
+            z-index: -1;
         }
         
         body {
@@ -36,6 +37,10 @@
                 stroke-dashoffset: 0;
             }
         }
+
+        #selector {
+            color: white;
+        }
     </style>
 </head>
 
@@ -50,12 +55,25 @@
     <div id="svg-container" class="graph">
 
     </div>
+
+    <p id="selector">
+        <ul>
+            <li>
+                <a href="#svg/padoru.svg" onclick="loadSvg('svg/padoru.svg')">padoru.svg</a>
+            </li>
+            <li>
+                <a href="#svg/graphtalia.svg" onclick="loadSvg('svg/graphtalia.svg')">graphtalia.svg</a>
+            </li>
+            <li>
+                <a href="#svg/kumiko.svg" onclick="loadSvg('svg/kumiko.svg')">kumiko.svg</a>
+            </li>
+        </ul>
+    </p>
     
     <script>
         var config = {
             gridPlaytime: 2,
             playtime: 1,
-            graphFile: 'svg/padoru.svg',
             gridLineDelay: 0.05,
             gridToGraphDelay: 3,
             easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
@@ -127,7 +145,7 @@
                 var len = paths[i].getTotalLength();
 
                 // Sleep n milliseconds
-                if (len > 3) {
+                if (len > 7) {
                     // Wait less time between lines as the animation progresses
                     await sleep(notYetDone*notYetDone*notYetDone * Math.random() * config.playtime * 1000);
                 }
@@ -139,13 +157,22 @@
             }
         }
 
-        fetch('svg/grid.svg')
-        .then(async r => gridContaier.innerHTML = await r.text())
-        .then(() => fetch(config.graphFile))
-        .then(async r => svgContaier.innerHTML = await r.text())
-        .then(() => createGrid())
-        .then(async () => await sleep(config.gridToGraphDelay * 1000))
-        .then(() => createGraph(document.querySelectorAll('.graph path')));
+        function loadSvg(filepath) {
+            fetch('svg/grid.svg')
+            .then(async r => gridContaier.innerHTML = await r.text())
+            .then(() => fetch(filepath))
+            .then(async r => svgContaier.innerHTML = await r.text())
+            .then(() => createGrid())
+            .then(async () => await sleep(config.gridToGraphDelay * 1000))
+            .then(() => createGraph(document.querySelectorAll('.graph path')));
+        }
+
+        var frag = document.location.hash.substr(1);
+        if (!frag) {
+            frag = 'svg/padoru.svg';
+        }
+
+        loadSvg(frag);
     </script>
 </body>
 
